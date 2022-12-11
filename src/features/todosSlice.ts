@@ -41,14 +41,6 @@ export const counterSlice = createSlice({
     handleDelete: (todos, action: PayloadAction<number>) => {
       todos.value = todos.value.filter((item) => item.id !== action.payload);
     },
-
-    handleAdd: (todos, action: PayloadAction<string>) => {
-      todos.value.push({
-        id: generateUniqueId(),
-        text: action.payload,
-        completed: false,
-      });
-    },
   },
 
   extraReducers: (builder) => {
@@ -62,7 +54,7 @@ export const counterSlice = createSlice({
   },
 });
 
-export const { handleCheck, handleDelete, handleAdd } = counterSlice.actions;
+export const { handleCheck, handleDelete } = counterSlice.actions;
 
 export const selectTodos = (state: RootState) => state.todos.value;
 

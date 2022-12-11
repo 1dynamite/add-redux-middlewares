@@ -1,7 +1,7 @@
 import "./App.css";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "./app/hooks";
-import { handleCheck, handleAdd, handleDelete } from "./features/todosSlice";
+import { handleCheck, addAsync, handleDelete } from "./features/todosSlice";
 
 interface Todo {
   id: number;
@@ -14,7 +14,7 @@ function Input() {
   const dispatch = useAppDispatch();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.code === "Enter") dispatch(handleAdd(value));
+    if (e.code === "Enter") dispatch(addAsync(value));
   };
 
   return (
