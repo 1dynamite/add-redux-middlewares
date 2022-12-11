@@ -1,5 +1,7 @@
 import "./App.css";
 import { useState } from "react";
+import { useAppDispatch, useAppSelector } from "./app/hooks";
+import { handleCheck, handleAdd, handleDelete } from "./features/todosSlice";
 
 interface Todo {
   id: number;
@@ -7,22 +9,12 @@ interface Todo {
   completed: boolean;
 }
 
-const generateUniqueId = (() => {
-  let id = 0;
-  return () => id++;
-})();
-
-function Input({
-  onAddItem: handleAddItem,
-}: {
-  onAddItem: (text: string) => void;
-}) {
+function Input() {
   const [value, setValue] = useState("");
+  const dispatch = useAppDispatch();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.code === "Enter") {
-      handleAddItem(value);
-    }
+    if (e.code === "Enter") dispatch(handleAdd(value));
   };
 
   return (
@@ -37,22 +29,18 @@ function Input({
   );
 }
 
-function TodoItem({
-  data,
-  onCheck,
-  onDelete: handleDelete,
-}: {
-  data: Todo;
-  onCheck: (id: number, checked: boolean) => void;
-  onDelete: (id: number) => void;
-}) {
+function TodoItem({ data }: { data: Todo }) {
+  const dispatch = useAppDispatch();
+
   return (
     <div className="todo-item">
       <input
         className="checkbox"
         type="checkbox"
         checked={data.completed}
-        onChange={(e) => onCheck(data.id, e.target.checked)}
+        onChange={(e) =>
+          dispatch(handleCheck({ id: data.id, checked: e.target.checked }))
+        }
       />
       <span className={data.completed ? "todo-text-striked" : "todo-text"}>
         {data.text}
@@ -61,7 +49,7 @@ function TodoItem({
         <img
           alt="delete-icon"
           src="/x.png"
-          onClick={() => handleDelete(data.id)}
+          onClick={() => dispatch(handleDelete(data.id))}
         />
       </div>
     </div>
@@ -69,23 +57,7 @@ function TodoItem({
 }
 
 function App() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-
-  const handleCheck = (id: number, checked: boolean) => {
-    setTodos(
-      todos.map((item) =>
-        item.id === id ? { ...item, completed: checked } : item
-      )
-    );
-  };
-
-  const handleDelete = (id: number) => {
-    setTodos(todos.filter((item) => item.id !== id));
-  };
-
-  const handleAdd = (text: string) => {
-    setTodos([...todos, { id: generateUniqueId(), text, completed: false }]);
-  };
+  const todos = useAppSelector((state) => state.todos.value);
 
   return (
     <div className="app">
@@ -93,15 +65,10 @@ function App() {
         <h1>Todos</h1>
       </header>
       <main>
-        <Input onAddItem={handleAdd} />
+        <Input />
         <div className="todos">
           {todos.map((item) => (
-            <TodoItem
-              key={item.id}
-              data={item}
-              onCheck={handleCheck}
-              onDelete={handleDelete}
-            />
+            <TodoItem key={item.id} data={item} />
           ))}
         </div>
       </main>

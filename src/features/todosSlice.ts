@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "../app/store";
 
 const generateUniqueId = (() => {
@@ -15,6 +15,17 @@ interface Todo {
 const initialState: {
   value: Todo[];
 } = { value: [] };
+
+export const addAsync = createAsyncThunk(
+  "todos/handleAdd",
+  async (text: string) => {
+    const text_ = await new Promise<string>((resolve) =>
+      setTimeout(() => resolve(text), 1000)
+    );
+
+    return text_;
+  }
+);
 
 export const counterSlice = createSlice({
   name: "todos",
@@ -38,6 +49,16 @@ export const counterSlice = createSlice({
         completed: false,
       });
     },
+  },
+
+  extraReducers: (builder) => {
+    builder.addCase(addAsync.fulfilled, (todos, action) => {
+      todos.value.push({
+        id: generateUniqueId(),
+        text: action.payload,
+        completed: false,
+      });
+    });
   },
 });
 
