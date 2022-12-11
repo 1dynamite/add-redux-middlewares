@@ -1,56 +1,110 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import "./App.css";
+import { useState } from "react";
+
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+const generateUniqueId = (() => {
+  let id = 0;
+  return () => id++;
+})();
+
+function Input({
+  onAddItem: handleAddItem,
+}: {
+  onAddItem: (text: string) => void;
+}) {
+  const [value, setValue] = useState("");
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.code === "Enter") {
+      handleAddItem(value);
+    }
+  };
+
+  return (
+    <div className="input-container">
+      <input
+        placeholder="What needs to be done?"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+    </div>
+  );
+}
+
+function TodoItem({
+  data,
+  onCheck,
+  onDelete: handleDelete,
+}: {
+  data: Todo;
+  onCheck: (id: number, checked: boolean) => void;
+  onDelete: (id: number) => void;
+}) {
+  return (
+    <div className="todo-item">
+      <input
+        className="checkbox"
+        type="checkbox"
+        checked={data.completed}
+        onChange={(e) => onCheck(data.id, e.target.checked)}
+      />
+      <span className={data.completed ? "todo-text-striked" : "todo-text"}>
+        {data.text}
+      </span>
+      <div className="delete-icon">
+        <img
+          alt="delete-icon"
+          src="/x.png"
+          onClick={() => handleDelete(data.id)}
+        />
+      </div>
+    </div>
+  );
+}
 
 function App() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+
+  const handleCheck = (id: number, checked: boolean) => {
+    setTodos(
+      todos.map((item) =>
+        item.id === id ? { ...item, completed: checked } : item
+      )
+    );
+  };
+
+  const handleDelete = (id: number) => {
+    setTodos(todos.filter((item) => item.id !== id));
+  };
+
+  const handleAdd = (text: string) => {
+    setTodos([...todos, { id: generateUniqueId(), text, completed: false }]);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
+    <div className="app">
+      <header className="header">
+        <h1>Todos</h1>
       </header>
+      <main>
+        <Input onAddItem={handleAdd} />
+        <div className="todos">
+          {todos.map((item) => (
+            <TodoItem
+              key={item.id}
+              data={item}
+              onCheck={handleCheck}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      </main>
     </div>
   );
 }
