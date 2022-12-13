@@ -1,13 +1,14 @@
 import "./App.css";
 import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "./app/hooks";
-import { handleCheck, addAsync, handleDelete } from "./features/todosSlice";
-
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-}
+import {
+  handleCheck,
+  addAsync,
+  handleDelete,
+  selectTodoIds,
+  selectTodoById,
+} from "./features/todosSlice";
+import { EntityId } from "@reduxjs/toolkit";
 
 function Input() {
   const [value, setValue] = useState("");
@@ -29,7 +30,12 @@ function Input() {
   );
 }
 
-function TodoItem({ data }: { data: Todo }) {
+function Example() {
+  return <div>hey</div>;
+}
+
+function TodoItem(props: { id: EntityId }) {
+  const todo = useAppSelector((state) => selectTodoById(state, props.id))!;
   const dispatch = useAppDispatch();
 
   return (
@@ -37,19 +43,19 @@ function TodoItem({ data }: { data: Todo }) {
       <input
         className="checkbox"
         type="checkbox"
-        checked={data.completed}
+        checked={todo.completed}
         onChange={(e) =>
-          dispatch(handleCheck({ id: data.id, checked: e.target.checked }))
+          dispatch(handleCheck({ id: todo.id, checked: e.target.checked }))
         }
       />
-      <span className={data.completed ? "todo-text-striked" : "todo-text"}>
-        {data.text}
+      <span className={todo.completed ? "todo-text-striked" : "todo-text"}>
+        {todo.text} <Example />
       </span>
       <div className="delete-icon">
         <img
           alt="delete-icon"
           src="/x.png"
-          onClick={() => dispatch(handleDelete(data.id))}
+          onClick={() => dispatch(handleDelete(todo.id))}
         />
       </div>
     </div>
@@ -57,7 +63,7 @@ function TodoItem({ data }: { data: Todo }) {
 }
 
 function App() {
-  const todos = useAppSelector((state) => state.todos.value);
+  const todos = useAppSelector(selectTodoIds);
 
   return (
     <div className="app">
@@ -68,7 +74,7 @@ function App() {
         <Input />
         <div className="todos">
           {todos.map((item) => (
-            <TodoItem key={item.id} data={item} />
+            <TodoItem key={item} id={item} />
           ))}
         </div>
       </main>

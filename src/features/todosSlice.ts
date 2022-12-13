@@ -1,4 +1,9 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  PayloadAction,
+  createEntityAdapter,
+} from "@reduxjs/toolkit";
 import type { RootState } from "../app/store";
 
 const generateUniqueId = (() => {
@@ -12,15 +17,15 @@ interface Todo {
   completed: boolean;
 }
 
-const initialState: {
-  value: Todo[];
-} = { value: [] };
+const todosAdapter = createEntityAdapter<Todo>();
+
+const initialState = todosAdapter.getInitialState();
 
 export const addAsync = createAsyncThunk(
   "todos/handleAdd",
   async (text: string) => {
     const text_ = await new Promise<string>((resolve) =>
-      setTimeout(() => resolve(text), 1000)
+      setTimeout(() => resolve(text))
     );
 
     return text_;
@@ -32,20 +37,20 @@ export const counterSlice = createSlice({
   initialState,
   reducers: {
     handleCheck: (
-      todos,
+      state,
       action: PayloadAction<{ id: number; checked: boolean }>
     ) => {
-      todos.value.find((item) => item.id === action.payload.id)!.completed =
-        action.payload.checked;
+      state.entities[action.payload.id]!.completed = action.payload.checked;
     },
-    handleDelete: (todos, action: PayloadAction<number>) => {
-      todos.value = todos.value.filter((item) => item.id !== action.payload);
+
+    handleDelete: (state, action: PayloadAction<number>) => {
+      todosAdapter.removeOne(state, action.payload);
     },
   },
 
   extraReducers: (builder) => {
-    builder.addCase(addAsync.fulfilled, (todos, action) => {
-      todos.value.push({
+    builder.addCase(addAsync.fulfilled, (state, action) => {
+      todosAdapter.addOne(state, {
         id: generateUniqueId(),
         text: action.payload,
         completed: false,
@@ -56,6 +61,7 @@ export const counterSlice = createSlice({
 
 export const { handleCheck, handleDelete } = counterSlice.actions;
 
-export const selectTodos = (state: RootState) => state.todos.value;
+export const { selectIds: selectTodoIds, selectById: selectTodoById } =
+  todosAdapter.getSelectors((state: RootState) => state.todos);
 
 export default counterSlice.reducer;
