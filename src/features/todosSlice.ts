@@ -5,14 +5,10 @@ import {
   createEntityAdapter,
 } from "@reduxjs/toolkit";
 import type { RootState } from "../app/store";
-
-const generateUniqueId = (() => {
-  let id = 0;
-  return () => id++;
-})();
+import { addTodo, editTodo, removeTodo } from "../api/api";
 
 interface Todo {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
@@ -23,13 +19,7 @@ const initialState = todosAdapter.getInitialState();
 
 export const addAsync = createAsyncThunk(
   "todos/handleAdd",
-  async (text: string) => {
-    const text_ = await new Promise<string>((resolve) =>
-      setTimeout(() => resolve(text))
-    );
-
-    return text_;
-  }
+  async (text: string) => await addTodo(text)
 );
 
 export const counterSlice = createSlice({
@@ -38,23 +28,19 @@ export const counterSlice = createSlice({
   reducers: {
     handleCheck: (
       state,
-      action: PayloadAction<{ id: number; checked: boolean }>
+      action: PayloadAction<{ id: string; checked: boolean }>
     ) => {
       state.entities[action.payload.id]!.completed = action.payload.checked;
     },
 
-    handleDelete: (state, action: PayloadAction<number>) => {
+    handleDelete: (state, action: PayloadAction<string>) => {
       todosAdapter.removeOne(state, action.payload);
     },
   },
 
   extraReducers: (builder) => {
     builder.addCase(addAsync.fulfilled, (state, action) => {
-      todosAdapter.addOne(state, {
-        id: generateUniqueId(),
-        text: action.payload,
-        completed: false,
-      });
+      todosAdapter.addOne(state, action.payload);
     });
   },
 });
