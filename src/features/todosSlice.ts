@@ -1,11 +1,10 @@
 import {
-  createAsyncThunk,
   createSlice,
   PayloadAction,
   createEntityAdapter,
+  createAction,
 } from "@reduxjs/toolkit";
 import type { RootState } from "../app/store";
-import { addTodo, editTodo, removeTodo } from "../api/api";
 
 interface Todo {
   id: string;
@@ -17,9 +16,8 @@ const todosAdapter = createEntityAdapter<Todo>();
 
 const initialState = todosAdapter.getInitialState();
 
-export const addAsync = createAsyncThunk(
-  "todos/handleAdd",
-  async (text: string) => await addTodo(text)
+const addTodoSucceeded = createAction<PayloadAction<Todo>>(
+  "todos/handleAddSucceeded"
 );
 
 export const counterSlice = createSlice({
@@ -39,7 +37,7 @@ export const counterSlice = createSlice({
   },
 
   extraReducers: (builder) => {
-    builder.addCase(addAsync.fulfilled, (state, action) => {
+    builder.addCase(addTodoSucceeded, (state, action) => {
       todosAdapter.addOne(state, action.payload);
     });
   },

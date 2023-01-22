@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useAppDispatch, useAppSelector } from "./app/hooks";
 import {
   handleCheck,
-  addAsync,
   handleDelete,
   selectTodoIds,
   selectTodoById,
@@ -15,7 +14,8 @@ function Input() {
   const dispatch = useAppDispatch();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.code === "Enter") dispatch(addAsync(value));
+    if (e.code === "Enter")
+      dispatch({ type: "todos/handleAdd", payload: value });
   };
 
   return (
